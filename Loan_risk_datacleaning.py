@@ -61,41 +61,19 @@ print(df["Education"].unique())#5
 print(df["City"].unique()) #4
 print(df["EmploymentType"].unique()) #3
 
-df=pd.get_dummies(df,columns=["Gender"],dtype=int)
-df=pd.get_dummies(df,columns=["Education"],dtype=int)
-df=pd.get_dummies(df,columns=["City"],dtype=int)
-df=pd.get_dummies(df,columns=["EmploymentType"],dtype=int)
+df = pd.get_dummies(
+    df,
+    columns=["Gender","Education","City","EmploymentType"],
+    drop_first=True,
+    dtype=int
+)
 
 print(df.dtypes)
 
 
-#Bucketing 
-print(df["YearsExperience"].describe())
 
-df["Age_Group"]=pd.cut(
-   df["Age"],
-   bins=[18,30,45,60,70],
-   labels=["Young","Adult","Middle Age","Senior"],
-   include_lowest=True
-    )
 
-df=pd.get_dummies(df,columns=["Age_Group"],dtype=int)
 
-df["Income_Group"]=pd.cut(
-    df["Income"],
-    bins=[0,30000,50000,70000,100000],
-    labels=["Low","Medium","High","Very High"]
-    )
-
-df=pd.get_dummies(df,columns=["Income_Group"],dtype=int)
-
-df["Credit_Risk"] = pd.cut(
-    df["CreditScore"],
-    bins=[300,580,670,740,800,850],
-    labels=["Poor","Fair","Good","Very Good","Excellent"],
-    include_lowest=True
-)
-df=pd.get_dummies(df,columns=["Credit_Risk"],dtype=int)
 
 #New features
 df["Loan_Income_Ratio"] = df["LoanAmount"] / df["Income"]
