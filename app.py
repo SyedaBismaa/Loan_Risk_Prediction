@@ -7,8 +7,11 @@ Created on Wed Jul 22 20:36:57 2026
 import pandas as pd
 import streamlit as st
 import joblib
+import shap
+import matplotlib.pyplot as plt
 
 model=joblib.load("loan_approval_model.pkl")
+explainer = shap.TreeExplainer(model)
 
 st.title("Loan Risk Prediction system")
 
@@ -85,8 +88,6 @@ if st.button("Predict"):
         "Affordability": affordability
     }])
 
-    st.write(input_data)
-
     prediction = model.predict(input_data)
     probability = model.predict_proba(input_data)
 
@@ -97,9 +98,29 @@ if st.button("Predict"):
         st.error("❌ Loan Rejected")
 
     approval_probability = probability[0][1] * 100
+    
+    if approval_probability>=80:
+        risk= "Low Risk"
+    elif approval_probability >=50:
+        risk = "Medium Risk"
+    else:
+       risk = "High Risk"
 
     st.write(f"### Approval Probability: {approval_probability:.2f}%")
     st.progress(float(approval_probability) / 100)
+    
+    st.subheader("Risk Assessment")
+    st.info(f"Risk level :{risk}")
+    
+   
+    st.subheader("Why This Prediction?")
+    
+    shap_values = explainer(input_data)
+    
+    fig=plt.figure(figsize=(10,6))
+    shap.plots.waterfall(shap_values[0], show=False)
+    st.pyplot(fig)
+    plt.close(fig)
     
 
 

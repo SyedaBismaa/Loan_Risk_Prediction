@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-df=pd.read_csv(r"C:\Users\syeda\OneDrive\Desktop\Loan_risk\loan_risk_prediction_dataset.csv")
+df=pd.read_csv(r"C:\Users\syeda\OneDrive\Documents\Loan_risk\loan_risk_prediction_dataset.csv")
 
 print(df.head())
 df.isna().sum()
@@ -91,7 +91,7 @@ print(df.dtypes)
 
 # Save cleaned dataset
 df.to_csv(
-    r"C:\Users\syeda\OneDrive\Desktop\Loan_risk\loan_risk_cleaned.csv",
+    r"C:\Users\syeda\OneDrive\Documents\Loan_risk\loan_risk_cleaned.csv",
     index=False
 )
 

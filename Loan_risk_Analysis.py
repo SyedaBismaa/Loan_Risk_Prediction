@@ -26,7 +26,7 @@ from sklearn.metrics import(
     )
 
 
-df=pd.read_csv(r"C:\Users\syeda\OneDrive\Desktop\Loan_risk\loan_risk_cleaned.csv")
+df=pd.read_csv(r"C:\Users\syeda\OneDrive\Documents\Loan_risk\loan_risk_cleaned.csv")
 
 print(df.head(5))
 print(df.dtypes)
