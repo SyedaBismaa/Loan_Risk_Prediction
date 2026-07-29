@@ -1,23 +1,45 @@
-# Loan Risk Prediction
+#  Loan Risk Prediction System
 
-This project predicts whether a loan application will be approved using Machine Learning.
+An end-to-end Machine Learning project that predicts whether a loan application should be approved based on an applicant's financial and demographic information.
 
-The project includes data cleaning, feature engineering, model training, hyperparameter tuning, feature importance analysis, and a Streamlit web application for prediction.
+The project covers the complete ML pipeline—from data preprocessing and feature engineering to model comparison, hyperparameter tuning, explainable AI (SHAP), and deployment using Streamlit.
 
-## Technologies Used
+---
+
+##  Features
+
+- Data Cleaning & Preprocessing
+- Feature Engineering
+- VIF Analysis
+- Weight of Evidence (WoE)
+- Information Value (IV)
+- Model Training & Comparison
+- Hyperparameter Tuning using GridSearchCV
+- Feature Importance Analysis
+- Loan Approval Prediction
+- Approval Probability Score
+- Risk Assessment (Low / Medium / High)
+- SHAP Explainable AI for prediction interpretation
+- Interactive Streamlit Web Application
+
+---
+
+##  Technologies Used
 
 - Python
 - Pandas
+- NumPy
 - Scikit-learn
 - XGBoost
 - ScorecardPy
 - Matplotlib
+- SHAP
 - Streamlit
 - Joblib
 
-## Models Used
+---
 
-The following machine learning models were trained and compared:
+##  Models Trained
 
 | Model | Accuracy |
 |--------|----------|
@@ -26,36 +48,27 @@ The following machine learning models were trained and compared:
 | AdaBoost | 96.4% |
 | XGBoost | 96.2% |
 
-Hyperparameter tuning was performed using **GridSearchCV** for Decision Tree, AdaBoost, and XGBoost.
+The final deployed model is **XGBoost**, selected based on its superior predictive performance.
 
-## Project Files
+---
 
-- `Loan_risk_datacleaning.py` – Data cleaning and preprocessing
-- `Loan_risk_Analysis.py` – Feature engineering, model training and evaluation
-- `app.py` – Streamlit application
-- `loan_approval_model.pkl` – Trained model
-- `loan_risk_cleaned.csv` – Cleaned dataset
+##  Streamlit Application
 
-## Features
+The web application allows users to:
 
-- Data Cleaning
-- VIF Analysis
-- Weight of Evidence (WoE)
-- Information Value (IV)
-- Feature Importance
-- Model Comparison
-- Loan Approval Prediction using Streamlit
+- Enter applicant details
+- Predict loan approval
+- View approval probability
+- View applicant risk level
+- Understand the prediction using SHAP Explainability
 
-## Running the Project
+---
 
-Install the required libraries:
+##  Application Preview
 
-```bash
-pip install -r requirements.txt
-```
+<img width="607" height="673" alt="image" src="https://github.com/user-attachments/assets/c9671be4-a87c-49b4-8215-8bf14777e755" />
 
-Run the Streamlit app:
 
-```bash
-streamlit run app.py
-```
+---
+
+
