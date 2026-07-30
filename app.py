@@ -9,19 +9,25 @@ import streamlit as st
 import joblib
 import shap
 import matplotlib.pyplot as plt
+from sqlalchemy import create_engine
+import datetime
 
 model=joblib.load("loan_approval_model.pkl")
 explainer = shap.TreeExplainer(model)
 
-tab1,tab2=st.tabs(["Tab1","Tab2"])
+tab1,tab2,tab3=st.tabs(["Tab1","Tab2","Tab3"])
 
+conn = st.secrets["postgres"]
+engine = create_engine(
+    f"postgresql://{conn['user']}:{conn['password']}@{conn['host']}:{conn['port']}/{conn['dbname']}?sslmode=require"
+)
 
 
 st.divider()
 
 with tab1:
     st.title("Loan Risk Prediction system")
-    st.write("Enter the applicant's details below to predict loan approval")
+    st.caption("Enter the applicant's details below to predict loan approval")
     
     st.header("Applicant Details")
 
@@ -94,6 +100,7 @@ with tab1:
 
         prediction = model.predict(input_data)
         probability = model.predict_proba(input_data)
+        
 
         
         if prediction[0] == 1:
@@ -126,10 +133,37 @@ with tab1:
         st.pyplot(fig)
         plt.close(fig)
         
+        input_data["Predictions"] = "Approved" if prediction[0] == 1 else "Rejected"
+        input_data["Probability (%)"] = round(approval_probability, 2)
+        input_data["Risk"] = risk
+        input_data["batch_id"] = "single_" + datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+
+
+        input_data.to_sql("loan_predictions", engine, if_exists="append", index=False)
+        st.toast("Saved to database!")
+        
 
 
 with tab2:
-    st.write("Content in tab 2")
+    st.title("Batch Loan Prediction system ")
+    st.caption("Upload a CSV to predict loan approval for multiple applicants")
+    with st.expander("Prerequisites"):
+      st.write("""
+      1. File must be in CSV format only.
+      2. Data must be cleaned, with no missing values.
+      3. The CSV must contain the following columns:
+         - Age, Income, LoanAmount, CreditScore, YearsExperience
+         - Gender_Male , Gender_Female
+         - Education_High School, Education_Masters, Education_PhD, Education_Unkown
+         - City_Houston, City_New York, City_San Francisco
+         - EmploymentType_Self-Employed, EmploymentType_Unemployed
+         - Affordability
+      4. Column order will be auto-corrected if needed.
+      5. Once you click **Predict**, results (Prediction, Probability, Risk) will be shown and automatically saved to the database.
+      """)
+    
+    
     
     uploaded_file= st.file_uploader("Upload a CSV file only!", type="csv")
     
@@ -148,6 +182,7 @@ with tab2:
         "City_San Francisco","EmploymentType_Self-Employed",
         "EmploymentType_Unemployed","Affordability"]
         
+        
         if df.empty:
             st.error("The CSV file is empty!")
         elif not required_cols.issubset(df.columns):
@@ -157,28 +192,40 @@ with tab2:
             if list(df.columns)!=required_order:
                 df=df[required_order]
                 st.info("Columns Reorderd")
+                
+        
+                    
             if st.button("Predict",key="predict_tab2"):
 
                 X = df
                 predictions = model.predict(X)
                 probabilities=model.predict_proba(df)[:,1]
                 
+                
                 df["Predictions"]=["Approved" if p==1 else "Rejected" for p in predictions]
                 df["Probability (%)"]=( probabilities*100).round(2)
                 df["Risk"]=df["Probability (%)"].apply(
                     lambda p:"Low Risk" if p>=80 else("Medium Risk" if p>=50 else "High Risk")
                     )
+                
+                batch_id = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                df["batch_id"] = batch_id
+                
                 st.write(df)
                 total=len(df)
                 approved=(df["Predictions"]=="Approved").sum()
                 rejected= total - approved
                 approved_pct = (approved/total)*100
                 
+                
                 col1,col2,col3,col4 =st.columns(4)
                 col1.metric("Total Applications", total)
                 col2.metric("Approved", approved)
                 col3.metric("Rejected", rejected)
                 col4.metric("Approval %", f"{approved_pct:.1f}%")
+                
+                df.to_sql("loan_predictions", engine, if_exists="append", index=False)
+                st.toast("Saved to database!")
                 
                 csv_data = df.to_csv(index=False).encode("utf-8")
                 st.download_button(
@@ -188,6 +235,9 @@ with tab2:
                     mime="text/csv",
                     key="download_csv"
                     )
+                
+
+
 
                 report= f"""Loan Prediction Report
                 -----------------------------------
@@ -207,7 +257,28 @@ with tab2:
                     mime="text/plain",
                     key="download_report"
                 )
-                        
+                
+        
+        
+with tab3:
+    st.title("Prediction History")
+    st.caption("View past predictions and approval trends")
+    history = pd.read_sql("""
+    SELECT batch_id, 
+           COUNT(*) AS total,
+           SUM(CASE WHEN "Predictions"='Approved' THEN 1 ELSE 0 END) AS approved,
+           ROUND(100.0 * SUM(CASE WHEN "Predictions"='Approved' THEN 1 ELSE 0 END) / COUNT(*), 1) AS approval_rate
+    FROM loan_predictions
+    GROUP BY batch_id
+    ORDER BY batch_id DESC
+    """, engine)
+    if not history.empty:
+        st.write(history)
+        st.line_chart(history.sort_values("batch_id").set_index("batch_id")["approval_rate"])
+    else:
+        st.info("No prediction history yet. ")
+        
+    
 
 
 
