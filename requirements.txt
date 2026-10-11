@@ -8,3 +8,4 @@ shap
 matplotlib
 sqlalchemy
 psycopg2-binary
+psycopg[binary]
