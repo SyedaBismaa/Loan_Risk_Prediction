@@ -71,4 +71,6 @@ The web application allows users to:
 
 ---
 
+Live :- https://loanriskprediction-sybi.streamlit.app/
+
 
