@@ -12,10 +12,20 @@ import matplotlib.pyplot as plt
 from sqlalchemy import create_engine
 import datetime
 
+
+
+
+
 model=joblib.load("loan_approval_model.pkl")
 explainer = shap.TreeExplainer(model)
 
-tab1,tab2,tab3=st.tabs(["Tab1","Tab2","Tab3"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "Loan Prediction",
+    "Batch Prediction",
+    "Prediction History",
+    "Financial & CIBIL Guide",
+    "About Project"
+])
 
 conn = st.secrets["postgres"]
 engine = create_engine(
@@ -282,4 +292,262 @@ with tab3:
 
 
 
-       
+
+with tab4:
+
+    st.title("Financial & CIBIL Guide")
+    st.caption("Learn about credit scores, loans, and responsible borrowing.")
+
+    st.divider()
+
+    # Section 1: CIBIL score introduction
+    st.header("Understanding CIBIL Score")
+
+    st.write("""
+    A CIBIL Score is a three-digit number that represents an individual's
+    credit history and repayment behavior.
+
+    It ranges from 300 to 900. Lenders use it as one of several factors
+    when evaluating loan and credit card applications.
+    """)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric("CIBIL Score Range", "300–900")
+
+    with col2:
+        st.metric("Generally Good Score", "Above 700")
+
+    st.info(
+        "A higher score generally improves the chances of loan approval. "
+        "However, every lender has its own eligibility criteria."
+    )
+
+    st.subheader("Factors Affecting Your Credit Score")
+
+    factors = [
+        ("Payment History", "Paying EMIs and credit card bills on time."),
+        ("Credit Utilization", "How much of your available credit limit you use."),
+        ("Credit History", "How long you have maintained credit accounts."),
+        ("Credit Mix", "Your combination of secured and unsecured credit."),
+        ("Credit Enquiries", "Recent applications for loans and credit cards.")
+    ]
+
+    for title, description in factors:
+        with st.expander(title):
+            st.write(description)
+
+    st.divider()
+
+    # Section 2: Different types of loans
+    st.header("Types of Loans")
+
+    loan_types = {
+        "Personal Loan": "An unsecured loan used for personal expenses.",
+        "Home Loan": "A secured loan used to purchase or construct a house.",
+        "Education Loan": "A loan used to finance higher education.",
+        "Vehicle Loan": "A loan used to purchase a car or two-wheeler.",
+        "Business Loan": "Financing provided for business operations or expansion.",
+        "Gold Loan": "A secured loan where gold is pledged as collateral."
+    }
+
+    for loan, description in loan_types.items():
+        with st.expander(loan):
+            st.write(description)
+
+    st.divider()
+
+    # Section 3: Important financial terms
+    st.header("Important Financial Terms")
+
+    terms = {
+        "Principal Amount": "The original amount borrowed from a lender.",
+        "Interest Rate": "The percentage charged by the lender for borrowing money.",
+        "EMI": "Equated Monthly Installment paid towards a loan.",
+        "Loan Tenure": "The total period within which the loan must be repaid.",
+        "Debt-to-Income Ratio": "The proportion of income used to repay existing debts.",
+        "Collateral": "An asset pledged as security for a secured loan.",
+        "Default": "Failure to meet repayment obligations."
+    }
+
+    for term, meaning in terms.items():
+        with st.expander(term):
+            st.write(meaning)
+
+    st.divider()
+
+    # Section 4: Interactive EMI Calculator
+    st.header("Loan EMI Calculator")
+
+    st.write("Estimate your monthly loan repayment.")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        principal = st.number_input(
+            "Loan Amount (₹)",
+            min_value=1000,
+            value=500000,
+            step=10000
+        )
+
+        annual_rate = st.number_input(
+            "Annual Interest Rate (%)",
+            min_value=0.1,
+            value=10.0,
+            step=0.5
+        )
+
+    with col2:
+        tenure = st.number_input(
+            "Loan Tenure (Years)",
+            min_value=1,
+            value=5,
+            step=1
+        )
+
+    # Convert annual interest rate to monthly interest rate
+    monthly_rate = annual_rate / (12 * 100)
+
+    # Convert years into total monthly installments
+    total_months = tenure * 12
+
+    # Calculate EMI using the standard loan repayment formula
+    if monthly_rate > 0:
+        emi = (
+            principal * monthly_rate *
+            (1 + monthly_rate) ** total_months
+        ) / ((1 + monthly_rate) ** total_months - 1)
+    else:
+        emi = principal / total_months
+
+    total_payment = emi * total_months
+    total_interest = total_payment - principal
+
+    st.subheader("Your Estimated EMI")
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Monthly EMI", f"₹{emi:,.0f}")
+    col2.metric("Total Interest", f"₹{total_interest:,.0f}")
+    col3.metric("Total Repayment", f"₹{total_payment:,.0f}")
+
+    st.caption(
+        "This is an illustrative calculation. Actual EMI may vary "
+        "depending on lender terms, fees, and interest calculation methods."
+    )
+
+    st.divider()
+
+    st.header("Tips for Responsible Borrowing")
+
+    st.markdown("""
+    - Pay your EMIs and credit card bills on time.
+    - Avoid borrowing more than you can comfortably repay.
+    - Compare interest rates and processing fees before taking a loan.
+    - Maintain a healthy credit utilization ratio.
+    - Review your credit report periodically.
+    - Avoid applying for multiple loans unnecessarily.
+    """)
+
+    st.caption(
+        "Educational information only. This guide does not provide "
+        "personalized financial advice."
+    )
+
+
+
+
+with tab5:
+
+    st.title("About the Project")
+    st.caption("Loan Risk Prediction System using Machine Learning")
+
+    st.divider()
+
+    st.header("Project Overview")
+
+    st.write("""
+    The Loan Risk Prediction System is a machine learning application
+    designed to analyze applicant information and predict loan approval
+    outcomes.
+
+    It uses historical applicant data to identify patterns associated
+    with loan approval and rejection.
+    """)
+
+    st.header("Project Objectives")
+
+    st.markdown("""
+    - Automate the initial assessment of loan applications.
+    - Analyze financial and applicant-related attributes.
+    - Provide prediction probabilities.
+    - Support individual and batch predictions.
+    - Improve model interpretability using SHAP.
+    """)
+
+    st.divider()
+
+    st.header("Machine Learning Workflow")
+
+    workflow = [
+        "Data Collection and Understanding",
+        "Data Cleaning and Preprocessing",
+        "Exploratory Data Analysis",
+        "Feature Engineering",
+        "Model Training and Comparison",
+        "Hyperparameter Tuning",
+        "Model Evaluation",
+        "Model Deployment using Streamlit"
+    ]
+
+    for i, step in enumerate(workflow, start=1):
+        st.write(f"**{i}. {step}**")
+
+    st.divider()
+
+    st.header("Technology Stack")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("Programming and Data")
+        st.write("""
+        - Python
+        - Pandas
+        - NumPy
+        - Scikit-learn
+        - PostgreSQL
+        """)
+
+    with col2:
+        st.subheader("Machine Learning and Deployment")
+        st.write("""
+        - XGBoost
+        - SHAP
+        - Joblib
+        - Streamlit
+        - Matplotlib / Seaborn
+        """)
+
+    st.divider()
+
+    st.header("Model Explainability")
+
+    st.write("""
+    SHAP (SHapley Additive exPlanations) helps explain how individual
+    input features influence a model's prediction.
+
+    It helps us understand which applicant attributes contributed
+    positively or negatively to a prediction.
+    """)
+
+    st.header("Disclaimer")
+
+    st.warning("""
+    This project is an educational machine learning prototype.
+    Its predictions are not actual bank decisions or financial advice.
+    Model predictions depend on the training dataset and should not
+    be used as the sole basis for approving or rejecting loans.
+    """)
